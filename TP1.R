@@ -116,7 +116,7 @@ chef_lieux_coords <- st_coordinates(chefs_lieux)
 distances <- st_distance(centroid_coords, chef_lieux_coords)
 
 
-
+# Question 18
 
 
 
