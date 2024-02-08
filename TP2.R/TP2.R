@@ -3,6 +3,7 @@
 
 # Chargement des packages
 install.packages("openxlsx")
+install.packages("mapsf")
 
 library(dplyr)
 library(sf)
@@ -11,6 +12,7 @@ library(classInt)
 library(leaflet)
 library(openxlsx)
 library(classInt)
+library(mapsf)
 
 
 #####  Exercice 1  #####
@@ -130,3 +132,74 @@ plot(
   border = FALSE,
   main = "Densité de population",
 )
+
+
+
+
+#####  Exercice 2  #####
+rm(list=ls())
+
+# Import des données
+dep_fm <- st_read("fonds/dep_francemetro_2021.shp", options = "ENCODING=WINDOWS-1252")
+tx_pauv_2018 <-openxlsx::read.xlsx("fonds/Taux_pauvrete_2018.xlsx") %>% 
+  rename(code=Code)
+mer <- st_read("fonds/merf_2021.shp")
+
+# Jointure
+dep_fm<-dep_fm %>% 
+  left_join(tx_pauv_2018,
+            by="code")
+
+
+### Question 1
+plot(dep_fm["Tx_pauvrete"], breaks="quantile", main="quantile", border = FALSE)
+plot(dep_fm["Tx_pauvrete"], breaks="fisher", main="fisher", border = FALSE)
+plot(dep_fm["Tx_pauvrete"], breaks="equal", main="equal", border = FALSE)
+
+mf_map(x = dep_fm, var = "Tx_pauvrete", type = "choro", breaks = "quantile")
+mf_map(x = dep_fm, var = "Tx_pauvrete", type = "choro", breaks = "fisher")
+mf_map(x = dep_fm, var = "Tx_pauvrete", type = "choro", breaks = "equal")
+
+
+### Question 2
+class_tx_pauv <- c(0,13,17,25,max(dep_fm$Tx_pauvrete))
+tx_pauv_dep_fm <- dep_fm %>%
+  mutate(
+    tx_pauv_c = cut(
+      Tx_pauvrete,
+      breaks = class_tx_pauv,
+      include.lowest = TRUE,
+      right = FALSE,
+      ordered_result = TRUE
+    )
+  )
+
+table(tx_pauv_dep_fm$tx_pauv_c)
+pal2 <- c(
+  RColorBrewer::brewer.pal(
+    n=5,
+    name="Greens"
+  )[4:3],
+  RColorBrewer::brewer.pal(
+    n=5,
+    name="YlOrRd"
+  )[c(2,4:5)]
+)
+#plot(
+#  tx_pauv_dep_fm["tx_pauv_c"], 
+#  pal=pal2, 
+#  border = FALSE,
+#  main = "Taux de pauvreté",
+#)
+
+mf_map(x = tx_pauv_dep_fm,
+       var = "Tx_pauvrete",
+       type = "choro",
+       breaks = class_tx_pauv)
+
+mf_inset_on(dep_fm, pos = "topright")
+
+
+
+
+
