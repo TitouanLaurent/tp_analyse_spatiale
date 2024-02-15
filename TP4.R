@@ -13,7 +13,6 @@ library(mapsf)
 
 
 ##### Question 1
-
 # Import des données
 iris<-st_read("iris_franceentiere_2021/iris_franceentiere_2021.shp")
 data<-read.csv2("data/BASE_TD_FILO_DISP_IRIS_2018.csv",sep=";",dec=".")
@@ -94,8 +93,95 @@ str(liste_pds, max.level = 1)
 summary(liste_pds)
 
 
-### 7c
+##### Question 8
 
+### 8a
+marseille_L93$DISP_MED18_STD <- scale(marseille_L93$DISP_MED18)
+summary(marseille_L93$DISP_MED18_STD)
+var(marseille_L93$DISP_MED18_STD)
+
+
+### 8b
+moran.plot(as.numeric(marseille_L93$DISP_MED18_STD), listw=liste_pds)
+
+
+### 8c
+# En bas à gauche : autocorrélation positive et revenu médian faible => iris au revenu médian faible au milieu d'iris lui ressemblant
+# En haut à droite : autocorrélation positive et revenu médian élevé => iris au revenu médian élevé au mileu d'iris lui ressembant
+# En bas à droite : autocorrélation négative et revenu médian élevé => iris au revenu médian élevé au milieu d'iris au revenu médian plus faible
+# En haut à gauche : autocorrélation négative et revenu médian faible => iris au revenu médian faible au milieu d'iris au revenu médian plus fort
+
+
+### 8d
+# On remarque bien une corrélation spatiale entre les revenus médian (régression linéaire qui semble plausible)
+# Dans ce cas il s'agit d'une autocorrélation positive (pente positive + beacoup de points en bas à gauche et en haut à droite)
+
+
+##### Question 9
+
+### 9a
+moran.test(as.numeric(marseille_L93$DISP_MED18_STD), liste_pds, randomisation = TRUE)
+
+
+### 9b 
+# On a Iw = 0.71 > 0 avec une p_valeur très faible donc le test nous dit bien qu'il y a une autocorrélation spatiale positive 
+# Notre hypothèse est donc bien vérifiée
+
+
+
+##### Question 10
+
+### 10a
+mars_rev_lisa <- localmoran(as.numeric(marseille_L93$DISP_MED18_STD), listw=liste_pds)
+
+
+### 10b
+class(mars_rev_lisa)
+str(mars_rev_lisa, max.level = 1)
+summary(mars_rev_lisa)
+
+
+### 10c
+# La moyenne des indicateurs locaux Ii est 0.71 = l'indicateur de Moran global
+
+
+### 10d
+mars_rev_lisa_nega <- data.frame(mars_rev_lisa) %>% 
+  filter(Ii<0)
+colnames(mars_rev_lisa_nega)[5] <- "p_value"
+mars_rev_lisa_nega <- mars_rev_lisa_nega %>% 
+  filter(p_value<0.05)
+# => 2 iris en autocorrélation négative
+
+
+### 10e
+marseille_L93$LISA <- data.frame(mars_rev_lisa)$Ii
+mf_map(x = marseille_L93, var = "LISA", type = "choro", breaks = "quantile")
+mf_map(x = marseille_L93, var = "LISA", type = "choro", breaks = "fisher")
+mf_map(x = marseille_L93, var = "LISA", type = "choro", breaks = "equal")
+
+
+### 10f
+# Les LISA semblent se regrouper : on retrouve l'autocorrélation positive 
+
+
+### 10g
+colnames(mars_rev_lisa)[5] <- "p_value"
+marseille_L93$LISA_PVAL <- data.frame(mars_rev_lisa)$p_value
+
+
+### 10h
+signif <- subset(marseille_L93, LISA_PVAL < 0.05)
+# 114 observations significatives (sur 336 iris)
+
+
+### 10i
+class_p_value <- c(0,0.01,0.05,0.1,1)
+mf_map(x = marseille_L93, var = "LISA_PVAL", type = "choro", breaks = class_p_value)
+
+
+### 10j
+# On retrouve bien ce qu'on voulait
 
 
 
