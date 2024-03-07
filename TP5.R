@@ -145,7 +145,9 @@ leaflet() %>%
 
 ##### Exercice 4 #####
 
-
+### question 1
+boulodrome <- st_read(conn, query = "SELECT * FROM bpe21_metro WHERE typequ='F102'")
+paca <- st_read(conn, query = "SELECT * FROM regions_metro WHERE code='93'")
 
 
 
