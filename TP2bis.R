@@ -7,7 +7,7 @@ library(units)
 
 ### Question 1
 commune <-st_read("TP2.R/fonds/commune_francemetro_2021.shp", options = "ENCODING=WINDOWS-1252")
-
+plot(st_geometry(commune), lwd = 0.1)
 
 ### Question 2
 summary(commune)
@@ -110,25 +110,28 @@ centroid_coords %>% str()
 
 #e
 plot(st_geometry(dept_bretagne))
-plot(st_geometry(centroid_dept_bretagne), pch = 16, col = "orangered", add = TRUE)
+plot(st_geometry(centroid_dept_bretagne), pch = 16, col = "red", add = TRUE)
 text(
   x = centroid_coords$X,
   y = centroid_coords$Y,
   labels = centroid_coords$dept_lib,
   pos = 3,
   cex = 0.8,
-  col = "orangered"
+  col = "red"
 )
 
 
 ### Question 15
+commune_centroid_bret <- st_intersects(commune_bretagne, centroid_dept_bretagne)
+str(commune_centroid_bret)
+commune_centre_dep<-commune_bretagne[which(lengths(commune_centroid_bret)>0),]
 
 
-
-
-
-
-
+### Question 16
+intersection <- st_intersection(commune_betagne, centroid_dept_bretagne)
+str(intersection)
+within <- st_within(commune_betagne, centroid_dept_bretagne)
+str(within)
 
 
 
