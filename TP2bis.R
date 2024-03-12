@@ -134,5 +134,34 @@ within <- st_within(commune_betagne, centroid_dept_bretagne)
 str(within)
 
 
+### Question 17
+st_distance(centroid_dept_bretagne, commune_bretagne %>%
+                                  filter(libelle %in% c("Saint-Brieuc","Quimper","Rennes","Vannes")))
 
 
+### Question 18
+#a
+rayon20 <- st_buffer(centroid_dept_bretagne, 20000)
+
+#b
+plot(rayon20, add = TRUE)
+
+#c
+commune_rayon20 <- st_intersection(commune_bretagne, rayon20)
+
+#d
+#280
+
+
+### Question 19
+#a
+st_transform(commune_bretagne, 4326)
+
+#b
+plot(st_geometry(commune_bretagne))
+
+
+### Question 20
+commune_bretagne <- commune_bretagne %>% 
+  mutate(surf3 = st_area(geometry)) %>% 
+  mutate(surf3 = set_units(commune_bretagne$surf3, km^2))
